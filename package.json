@@ -1,0 +1,23 @@
+{
+  "name": "behavior-graph",
+  "version": "0.2.0",
+  "description": "Library and CLI for the Behavior Graph Specification: store, edit, lint, render and audit a behavior graph.",
+  "license": "MIT",
+  "type": "module",
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "bgraph": "src/cli.ts"
+  },
+  "files": ["src"],
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  }
+}
