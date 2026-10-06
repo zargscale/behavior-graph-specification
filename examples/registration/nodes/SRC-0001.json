@@ -1,0 +1,10 @@
+{
+  "edges": [],
+  "id": "SRC-0001",
+  "props": {
+    "entry": true,
+    "hash": "bab24d444a2d",
+    "path": "BEHAVIOR.md"
+  },
+  "type": "gherkin/source"
+}

@@ -1,6 +1,6 @@
 {
   "name": "behavior-graph",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Library and CLI for the Behavior Graph Specification: store, edit, lint, render and audit a behavior graph.",
   "license": "MIT",
   "type": "module",

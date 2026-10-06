@@ -1,8 +1,8 @@
 /** The operation vocabulary (§6.2, §9.3): each turns params and a snapshot into changes, or throws an OpError. */
 import { applyChanges, type Change, inbound, nextId, type Node, Put, Remove, type Snapshot } from "./graph.ts"
 import {
-  ARRIVES, BOUNDS, BY, CONSTRAINT, findJourney, findPersona, findStateByText, FOR, GIVEN, HAS, IN, INTENT, isStatement, JOURNEY, journeys, nameOf, type NamedRef,
-  OUTCOME, PERSONA, personas, QUESTION, SCENARIO, SERVES, STATE, THEN,
+  ARRIVES, BOUNDS, BY, CONSTRAINT, findJourney, findPersona, findSource, findStateByText, FOR, FROM, GIVEN, HAS, IN, INTENT, isStatement, JOURNEY, journeys, nameOf, type NamedRef,
+  OUTCOME, PERSONA, personas, QUESTION, SCENARIO, SERVES, SOURCE, STATE, THEN,
 } from "./model.ts"
 
 export class OpError extends Error {}
@@ -198,14 +198,27 @@ const editScenario: Op = {
   },
 }
 
-const EDGE_TYPES = { arrives: ARRIVES, given: GIVEN, then: THEN, by: BY, in: IN, serves: SERVES, bounds: BOUNDS, for: FOR } as const
+const EDGE_TYPES = { arrives: ARRIVES, given: GIVEN, then: THEN, by: BY, in: IN, serves: SERVES, bounds: BOUNDS, for: FOR, from: FROM } as const
+
+/** A source by its id or its path. */
+const sourceOf = (snap: Snapshot, raw: unknown): Node => {
+  if (typeof raw !== "string") return fail("source takes a source id or a path")
+  const n = snap.nodes.get(raw)
+  return n?.type === SOURCE ? n : (findSource(snap, raw) ?? fail(`${raw} is not a recorded source; run bgraph sources --accept first`))
+}
+/** Any gherkin node but a source: what can derive from a source. */
+const derivedNode = (snap: Snapshot, raw: unknown): Node => {
+  if (typeof raw !== "string") return fail("from takes {node: id}")
+  const n = snap.nodes.get(raw) ?? fail(`${raw} does not exist`)
+  return n.type.startsWith("gherkin/") && n.type !== SOURCE ? n : fail(`${raw} is a ${n.type}; only gherkin nodes other than sources derive from a source`)
+}
 type EdgeName = keyof typeof EDGE_TYPES
 const edgeName = (p: Params): EdgeName => oneOf(p, "edge", Object.keys(EDGE_TYPES) as Array<EdgeName>) ?? fail(`edge must be one of ${Object.keys(EDGE_TYPES).join(", ")}`)
 
 const link: Op = {
   name: "link",
   description:
-    'Connect a scenario to a state (arrives replaces the current one; given; then), a persona (by) or a journey (in). Also {edge: "serves", journey, outcome}, {edge: "bounds", constraint, journey | scenario}, {edge: "for", intent, persona}.',
+    'Connect a scenario to a state (arrives replaces the current one; given; then), a persona (by) or a journey (in). Also {edge: "serves", journey, outcome}, {edge: "bounds", constraint, journey | scenario}, {edge: "for", intent, persona}, {edge: "from", node, source: id or path, section?}.',
   run: (p, snap) => {
     const edge = edgeName(p)
     const type = EDGE_TYPES[edge]
@@ -216,6 +229,13 @@ const link: Op = {
             changes: [...created.map(Put), Put({ ...source, edges: [...(edge === "arrives" ? source.edges.filter((e) => e.type !== ARRIVES) : source.edges), { type, to }] })],
             message: `linked ${source.id} ${edge} ${to}${createdNote(created)}`,
           }
+    if (edge === "from") {
+      const node = derivedNode(snap, p.node)
+      const src = sourceOf(snap, p.source)
+      const section = optStr(p, "section")
+      if (node.edges.some((e) => e.type === FROM && e.to === src.id)) return { changes: [], message: `${node.id} already has from ${src.id}: no change` }
+      return { changes: [Put({ ...node, edges: [...node.edges, { type: FROM, to: src.id, ...(section !== undefined ? { props: { section } } : {}) }] })], message: `linked ${node.id} from ${src.id}` }
+    }
     if (edge === "serves") {
       if (p.journey === undefined || p.outcome === undefined) fail("serves takes {journey: {id} or {name}, outcome: id}")
       const journey = getNode(snap, journeyOf(snap, p.journey), JOURNEY)
@@ -243,10 +263,17 @@ const link: Op = {
 
 const unlink: Op = {
   name: "unlink",
-  description: "Remove a relationship: {edge, scenario, state | persona | journey: id}; or serves {journey, outcome}, bounds {constraint, journey | scenario}, for {intent, persona}. Refuses a scenario's last persona.",
+  description: "Remove a relationship: {edge, scenario, state | persona | journey: id}; or serves {journey, outcome}, bounds {constraint, journey | scenario}, for {intent, persona}, from {node, source}. Refuses a scenario's last persona.",
   run: (p, snap) => {
     const edge = edgeName(p)
     const type = EDGE_TYPES[edge]
+    if (edge === "from") {
+      const node = derivedNode(snap, p.node)
+      const src = sourceOf(snap, p.source)
+      const edges = node.edges.filter((e) => !(e.type === FROM && e.to === src.id))
+      if (edges.length === node.edges.length) fail(`${node.id} has no from ${src.id}`)
+      return { changes: [Put({ ...node, edges })], message: `unlinked ${node.id} from ${src.id}` }
+    }
     const [sourceId, target, sourceType] =
       edge === "serves" ? [p.journey, p.outcome, JOURNEY]
       : edge === "bounds" ? [p.constraint, p.journey ?? p.scenario, CONSTRAINT]
@@ -282,6 +309,22 @@ const remove: Op = {
     if (users.length > 0) fail(`${id} is used by ${[...new Set(users)].join(", ")}; relink or remove them first`)
     const bounding = dropEdgesTo(inbound(snap, id, BOUNDS).map((e) => e.from), (e) => !(e.type === BOUNDS && e.to === id))
     return { changes: [...bounding, Remove(id)], message: `removed ${id}` }
+  },
+}
+
+/** Records a source document's evaluated hash: creates its node, or updates the one with that path. */
+const recordSource: Op = {
+  name: "record-source",
+  description: "Record that a source document was evaluated at a hash: {path, hash, entry?}. bgraph sources --accept calls it; prefer that.",
+  run: (p, snap) => {
+    const path = reqStr(p, "path")
+    const hash = reqStr(p, "hash")
+    const entry = optBool(p, "entry")
+    const existing = findSource(snap, path)
+    const props = { path, hash, ...(entry === true ? { entry: true } : {}) }
+    if (existing !== undefined) return { changes: [Put({ ...existing, props })], message: `recorded ${existing.id} ${path}@${hash}` }
+    const id = nextId(snap, "SRC")
+    return { changes: [Put({ id, type: SOURCE, props, edges: [] })], message: `recorded ${id} ${path}@${hash}` }
   },
 }
 
@@ -353,6 +396,7 @@ export const OPS: ReadonlyArray<Op> = [
   ...statementOps("constraint", CONSTRAINT, "K", "a constraint (one rule that must hold where it bounds)"),
   ...statementOps("question", QUESTION, "Q", "an open question (one thing not decided yet)"),
   answerQuestion,
+  recordSource,
 ]
 
 /** Entity refs in params (`gherkin/state:ST-0002@abc`) mean their bare ids. */

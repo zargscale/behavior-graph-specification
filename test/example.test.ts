@@ -8,7 +8,7 @@ const draft = JSON.parse(readFileSync("examples/registration/draft.json", "utf8"
 
 test("loads cleanly, with no findings", () => {
   expect(problems).toEqual([])
-  expect(snap.nodes.size).toBe(14)
+  expect(snap.nodes.size).toBe(16)
   expect(checkAll(snap)).toEqual([])
 })
 
@@ -62,7 +62,7 @@ test("the draft's dry run, impact and new versions", () => {
   })
   const after = applyDraft(snap, draft).snapshot
   expect(affected(snap, after)).toEqual({ scenarios: ["S-0001", "S-0002", "S-0003", "S-0004"], removed: [] })
-  // The stored scenario is unchanged; what a tester reads changed (§10.2).
+  // The stored scenario is unchanged; what a tester reads changed (§11.2).
   expect(revision(after.nodes.get("S-0002")!)).toBe("61113fc7a1a9")
   expect(["S-0001", "S-0002", "S-0003", "S-0004"].map((id) => scenarioVersion(after, id))).toEqual(["cecf1a175957", "05352f0487ea", "cc66f1f352b4", "a8d4b19eeadb"])
 })

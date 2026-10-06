@@ -1,4 +1,4 @@
-/** Story planning (§11): finite walks through the derived scenario flow. */
+/** Story planning (§12): finite walks through the derived scenario flow. */
 import { byType, inbound, out, type Snapshot } from "./graph.ts"
 import { ARRIVES, IN, JOURNEY, nextOf, scenarios, THEN } from "./model.ts"
 

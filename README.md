@@ -2,9 +2,9 @@
 
 A specification for connected, traceable software requirements.
 
-Version: 0.2 — Public draft
+Version: 0.3 — Public draft
 
-Date: 2026-10-05
+Date: 2026-10-06
 
 ## Contents
 
@@ -17,14 +17,15 @@ Date: 2026-10-05
 - [7. Rendering](#7-rendering)
 - [8. Complete example](#8-complete-example)
 - [9. Optional extension: intents and coverage](#9-optional-extension-intents-and-coverage)
-- [10. Optional extension: versions and change impact](#10-optional-extension-versions-and-change-impact)
-- [11. Optional extension: stories and rehearsal](#11-optional-extension-stories-and-rehearsal)
-- [12. Optional extension: implementation and evidence](#12-optional-extension-implementation-and-evidence)
-- [13. Entity references](#13-entity-references)
-- [14. Storage and interchange](#14-storage-and-interchange)
-- [15. Adoption and acceptance checks](#15-adoption-and-acceptance-checks)
+- [10. Optional extension: sources](#10-optional-extension-sources)
+- [11. Optional extension: versions and change impact](#11-optional-extension-versions-and-change-impact)
+- [12. Optional extension: stories and rehearsal](#12-optional-extension-stories-and-rehearsal)
+- [13. Optional extension: implementation and evidence](#13-optional-extension-implementation-and-evidence)
+- [14. Entity references](#14-entity-references)
+- [15. Storage and interchange](#15-storage-and-interchange)
+- [16. Adoption and acceptance checks](#16-adoption-and-acceptance-checks)
 - [Reference library and CLI](#reference-library-and-cli)
-- [Changes from 0.1](#changes-from-01)
+- [Changes](#changes)
 - [License](#license)
 
 ## 1. Purpose and scope
@@ -35,9 +36,9 @@ The same graph supports requirements conversations, change review, journey explo
 
 This document defines an open, implementation-independent model and its authoring rules. **MUST** identifies a requirement of the model; **SHOULD** identifies a recommended practice; **MAY** identifies an optional capability. Sections labeled optional extensions apply only to implementations that support those extensions.
 
-The core comprises states, scenarios, personas, journeys, validation, rendering, and derived flow. Storage technology, programming language, user interface, model providers, and orchestration are implementation choices. Intents, versioning, story generation, code traceability, and evidence are optional extensions described below.
+The core comprises states, scenarios, personas, journeys, validation, rendering, and derived flow. Storage technology, programming language, user interface, model providers, and orchestration are implementation choices. Source documents, intents, versioning, story generation, code traceability, and evidence are optional extensions described below.
 
-The examples in this document are output of the reference library and CLI in this repository (see [Reference library and CLI](#reference-library-and-cli)); its tests pin every value shown. The node files of the complete example are in [`examples/registration/nodes/`](examples/registration/nodes/), and the draft from §6.4 is in [`examples/registration/draft.json`](examples/registration/draft.json). Rendered text, agenda items, fingerprints, and dry-run results shown below are its output for those files. Fingerprint strings depend on the serialization and hash choices in §14; other implementations can produce different strings.
+The examples in this document are output of the reference library and CLI in this repository (see [Reference library and CLI](#reference-library-and-cli)); its tests pin every value shown. The node files of the complete example are in [`examples/registration/nodes/`](examples/registration/nodes/), and the draft from §6.4 is in [`examples/registration/draft.json`](examples/registration/draft.json). Rendered text, agenda items, fingerprints, and dry-run results shown below are its output for those files. Fingerprint strings depend on the serialization and hash choices in §15; other implementations can produce different strings.
 
 ### Relationship to Gherkin
 
@@ -58,13 +59,15 @@ The graph is the authoritative representation here. The text view adds scenario 
 | **Journey** | A named set of scenarios belonging to a recognizable activity. Membership does not specify their order. |
 | **Intent** | What a product, or one area of it, is for: a title, the problem, and its statements (§9). |
 | **Statement** | One outcome, constraint, or question that belongs to an intent (§9). |
+| **Source document** | A human-written Markdown document the graph is derived from, such as `INTENT.md` (§10). |
+| **Entry document** | A Markdown document whose frontmatter lists source documents and whose body instructs the evaluator (§10). |
 | **Story** | An ordered sequence of scenarios selected for examination or testing. Derived from the graph. |
 | **Draft** | An ordered list of authoring operations evaluated over a snapshot without changing the accepted graph. |
 | **Finding** | A validation result with a severity, a stable code, a message, and the IDs it concerns. |
 | **Agenda** | Questions raised by incomplete or suspicious parts of the graph. |
 | **Node revision** | A fingerprint of one stored node, used to detect stale edits. |
 | **Scenario version** | A fingerprint of a scenario and the referenced wording it depends on, used to detect stale feedback and evidence. |
-| **Entity reference** | A typed, optionally versioned pointer to a node, such as `gherkin/scenario:S-0002@e30089cbc147` (§13). |
+| **Entity reference** | A typed, optionally versioned pointer to a node, such as `gherkin/scenario:S-0002@e30089cbc147` (§14). |
 
 A scenario is a requirement, not a task ticket. A journey is a grouping, not a second copy of the requirements. A story is a selected walk, not a new source of truth.
 
@@ -119,7 +122,7 @@ Required strings MUST be nonempty. Authors SHOULD remove surrounding whitespace 
 
 The persona kind `human` identifies a person using the product, `cli` an automated actor interacting through its command line, and `agent` an agent within the product. These categories describe interaction roles; they do not grant permissions.
 
-Examples use `ST-0001` for states, `S-0001` for scenarios, `P-0001` for personas, and `J-0001` for journeys; §9 adds `I`, `O`, `K`, and `Q`. These prefixes are illustrative; consumers MUST read `type` rather than infer it from an ID. Implementations MAY choose any allocation scheme that satisfies the ID rules. One simple scheme takes the highest existing number for a prefix, including reserved IDs (§14), and adds one: `ST-0006` follows `ST-0005`.
+Examples use `ST-0001` for states, `S-0001` for scenarios, `P-0001` for personas, and `J-0001` for journeys; §9 adds `I`, `O`, `K`, and `Q`, and §10 adds `SRC`. These prefixes are illustrative; consumers MUST read `type` rather than infer it from an ID. Implementations MAY choose any allocation scheme that satisfies the ID rules. One simple scheme takes the highest existing number for a prefix, including reserved IDs (§15), and adds one: `ST-0006` follows `ST-0005`.
 
 ### 3.3 Scenario relationships
 
@@ -294,7 +297,7 @@ Implementations SHOULD use these codes, or document their own mapping to them:
 | `alternatives` | warn | A `when` clause contains a standalone `or`. |
 | `near-duplicate-state` | warn | Two states have similar wording. |
 
-Missing targets, stale revisions, and damaged files are failures of the write boundary rather than findings about content (§6.3, §14). They SHOULD still carry the affected IDs and a repair instruction.
+Missing targets, stale revisions, and damaged files are failures of the write boundary rather than findings about content (§6.3, §15). They SHOULD still carry the affected IDs and a repair instruction.
 
 ### 5.4 Completeness agenda
 
@@ -529,13 +532,17 @@ A journey view derives order from flow, marks branches and loopbacks, and includ
 
 ## 8. Complete example
 
-This example describes registration, including a failure that leaves the form available for retry. The failure case is not built yet, so it is `planned`. It also carries the intent extension from §9. Each node is one file in [`examples/registration/nodes/`](examples/registration/nodes/), named `<id>.json` and serialized in the canonical form from §14:
+This example describes registration, including a failure that leaves the form available for retry. The failure case is not built yet, so it is `planned`. It also carries the intent extension from §9. Each node is one file in [`examples/registration/nodes/`](examples/registration/nodes/), named `<id>.json` and serialized in the canonical form from §15:
 
 ```text
-examples/registration/nodes/
-  I-0001.json   J-0001.json   K-0001.json   O-0001.json   P-0001.json   Q-0001.json
-  S-0001.json   S-0002.json   S-0003.json
-  ST-0001.json  ST-0002.json  ST-0003.json  ST-0004.json  ST-0005.json
+examples/registration/
+  bgraph.json  BEHAVIOR.md  INTENT.md     # configuration and source documents (§10)
+  nodes/
+    I-0001.json   J-0001.json   K-0001.json   O-0001.json   P-0001.json   Q-0001.json
+    S-0001.json   S-0002.json   S-0003.json
+    ST-0001.json  ST-0002.json  ST-0003.json  ST-0004.json  ST-0005.json
+    SRC-0001.json SRC-0002.json
+  sources/                                # evaluated copies of the source documents
 ```
 
 For reading, the core nodes are listed together here. The wrapper `{ "nodes": [...] }` is an illustration, not a storage layout.
@@ -766,9 +773,116 @@ I-0001 Self-service sign-up
   Question   Does an unconfirmed account expire?  # Q-0001 (open)
 ```
 
-## 10. Optional extension: versions and change impact
+## 10. Optional extension: sources
 
-### 10.1 Two different fingerprints
+The graph is derived knowledge. Its origin is usually prose that people write and review: an intent statement, a requirements document, a set of user stories. This extension makes those documents the root of the graph. They are checksummed, every derived node can point back to the document it came from, and a changed document is re-evaluated against the graph.
+
+Source documents are authoritative for what people want. Tools and agents MUST NOT edit them. The graph never overrides a source document; when the two disagree, the disagreement becomes a question (§9) for a person to answer.
+
+### 10.1 Entry and source documents
+
+An *entry document* is a Markdown file whose YAML frontmatter lists its sources and whose body instructs whoever evaluates them:
+
+```markdown
+---
+sources:
+  - INTENT.md
+  - docs/requirements/*.md
+  - docs/stories/**/*.md
+---
+# Registration behavior
+
+INTENT.md is authoritative for why sign-up exists, who it is for, and the
+rules it must keep. User stories describe scenarios; ignore their estimates.
+```
+
+- `sources` is a list of paths or globs, relative to the entry document. Every listed path MUST stay inside the project root.
+- A project MAY have many entry documents, and each MAY list many sources. Several entries MAY list the same source; it is tracked once.
+- Sources do not list further sources. One level keeps the set of authoritative documents visible in the entry documents themselves.
+- An entry document is itself a source: changing its instructions is a reason to re-evaluate.
+- Discovery skips dot directories, such as `.git` and the graph directory, and `node_modules`.
+- A glob that matches nothing, a path outside the root, or unreadable frontmatter SHOULD be reported. It is not silently ignored.
+
+### 10.2 Configuration
+
+Entry documents are found by globs in `bgraph.json`, at the project root:
+
+```json
+{
+  "graph": ".behavior-graph",
+  "entries": ["BEHAVIOR.md", "services/*/BEHAVIOR.md"],
+  "ignore": ["docs"]
+}
+```
+
+| Key | Default | Meaning |
+| --- | --- | --- |
+| `graph` | `.behavior-graph` | The graph directory (§15). |
+| `entries` | `["**/BEHAVIOR.md"]` | Globs of entry documents. |
+| `ignore` | `["docs"]` | Paths the code-tag audit does not search (§13.1). |
+
+All paths are relative to the directory that holds `bgraph.json`. A tool SHOULD look for the file in the working directory and then in each parent, as package managers do, and use the defaults when none exists.
+
+### 10.3 Source nodes and provenance
+
+| Type | Properties | Meaning |
+| --- | --- | --- |
+| `gherkin/source` | `path: string`, `hash: string`; optional `entry: boolean` | A document as it was last evaluated. |
+
+| Edge | Source → target | Meaning |
+| --- | --- | --- |
+| `gherkin/from` | any `gherkin` node except a source → source | The node was derived from that document. Optional edge property `section: string` names the heading. |
+
+```json
+{ "from": { "from": ["state", "scenario", "persona", "journey", "intent", "outcome", "constraint", "question"], "to": "source" } }
+```
+
+`path` is relative to the project root and unique among sources. `hash` is the checksum of the text that was evaluated (§10.4), not of the file now.
+
+Provenance is about where a requirement came from, not what it says. A `from` edge MUST NOT change a scenario version (§11.1), and adding or removing one MUST NOT mark a scenario for re-implementation (§11.2). A source that nodes derive from MUST NOT be removed until they are relinked or removed (§6.2).
+
+### 10.4 Checksums and status
+
+A document's checksum is computed over its text with CRLF line endings replaced by LF, so that a checkout on another platform does not count as a change. The reference library uses the first 12 hex digits of SHA-256.
+
+Comparing the current files with the source nodes gives each document one status:
+
+| Status | Condition | Action |
+| --- | --- | --- |
+| `current` | Listed, and its checksum equals the recorded one. | None. |
+| `new` | Listed, and never evaluated. | Evaluate it. |
+| `changed` | Listed, and its checksum differs from the recorded one. | Re-evaluate it and its derived nodes. |
+| `unlisted` | Recorded, but no entry document lists it any more. | Decide what happens to its derived nodes. |
+| `missing` | Recorded, but the file is gone. | Decide what happens to its derived nodes. |
+
+An implementation SHOULD keep a copy of each evaluated text, so that re-evaluation can start from a diff instead of a reread. The reference library keeps it at `<graph>/sources/<hash><extension>`.
+
+For the complete example, after a line is added to `INTENT.md`:
+
+```text
+current   BEHAVIOR.md (entry)  # SRC-0001
+changed   INTENT.md  # SRC-0002
+          was sources/d9c4cfb08da4.md
+          derived I-0001, P-0001
+```
+
+### 10.5 Evaluation
+
+Evaluation is a judgment, so this extension defines its contract rather than an algorithm. An evaluator, whether a person or an agent:
+
+1. Lists the documents that are not `current`.
+2. For each, reads the entry document's instructions, the document (or its diff against the evaluated copy), and the nodes derived from it.
+3. Writes a draft (§6.4). New nodes carry `from` edges to their documents. A contradiction or a gap becomes an `ask-question` operation, not a guess.
+4. Previews the draft and has a person review it, then applies it.
+5. Records the documents as evaluated, with their new checksums.
+
+A document is recorded as evaluated only when its draft is applied, preferably in the same write: the draft then starts with `record-source` operations, which also lets it link `from` a document that was never evaluated before. The reference CLI does this with `bgraph apply draft.json --accept INTENT.md`. Removing nodes because their source text disappeared SHOULD be confirmed by a person. The audit (§13.1) reports every document that is not `current`, so that an edited document cannot go unevaluated unnoticed.
+
+This repository packages that procedure as an agent skill ([`skills/bgraph/SKILL.md`](skills/bgraph/SKILL.md)).
+
+## 11. Optional extension: versions and change impact
+
+### 11.1 Two different fingerprints
 
 A node revision answers, “Has this stored node changed since I read it?” A scenario version answers, “Has the requirement this feedback concerns changed?” Implementations supporting feedback SHOULD expose both rather than treat them as interchangeable.
 
@@ -794,9 +908,9 @@ For `S-0002` in the complete example, the fingerprint input is:
 }
 ```
 
-Entity references (§13) carry the version observed, such as `gherkin/scenario:S-0002@e30089cbc147`. The suffix records the version observed; it is not a promise that the provider stores or retrieves historical content. A consumer must compare it with the current version before reusing evidence or applying a version-dependent decision.
+Entity references (§14) carry the version observed, such as `gherkin/scenario:S-0002@e30089cbc147`. The suffix records the version observed; it is not a promise that the provider stores or retrieves historical content. A consumer must compare it with the current version before reusing evidence or applying a version-dependent decision.
 
-### 10.2 Change-impact analysis
+### 11.2 Change-impact analysis
 
 Change-impact analysis identifies requirements to reconsider after an edit. It SHOULD include added scenarios, scenarios whose action or relationships changed, and surviving scenarios that reference a reworded state. Removed scenarios SHOULD be reported separately so their implementation can be reviewed for removal or reassignment:
 
@@ -823,7 +937,7 @@ The draft in §6.4 shows the second row. Rewording `ST-0002` leaves the stored `
 
 Selecting a scenario for reconsideration does not guarantee a source-code change is necessary. Implementations MAY expand review to downstream scenarios, but SHOULD distinguish direct impact from that broader review scope.
 
-## 11. Optional extension: stories and rehearsal
+## 12. Optional extension: stories and rehearsal
 
 A story planner selects finite walks through the derived scenario adjacency. It SHOULD disclose what it did not cover. This extension defines three strategies:
 
@@ -862,9 +976,9 @@ A feedback record that a rehearsal files can look like this. Only `ref` is defin
 }
 ```
 
-## 12. Optional extension: implementation and evidence
+## 13. Optional extension: implementation and evidence
 
-### 12.1 Traceability and planned behavior
+### 13.1 Traceability and planned behavior
 
 Code and tests MAY carry requirement IDs in the language's comment syntax. One tag MAY name several scenarios:
 
@@ -889,7 +1003,7 @@ With tags for `S-0001` and `S-0002` in the complete example, plus a stale tag fo
 ```text
 code          S-0042 orphan: src/old.ts:9
 completeness  Q-0001 Does an unconfirmed account expire?
-structure 0 · lints 0 · code 1 (problems) · completeness 1 · coverage 0 (warnings) · 2 of 2 built tagged, 1 planned
+structure 0 · lints 0 · code 1 (problems) · completeness 1 · coverage 0 · sources 0 (warnings) · 2 of 2 built tagged, 1 planned
 ```
 
 The orphan tag is a problem and fails the audit. The open question is a completeness warning, which fails it only in strict mode.
@@ -898,7 +1012,7 @@ The orphan tag is a problem and fails the audit. The open question is a complete
 
 A rehearsal of implemented behavior SHOULD stop before a scenario that is planned or lacks implementation evidence, and report why it stopped. A specification review MAY include such scenarios. When evidence is unavailable, a reviewer MUST disclose that limitation rather than present the result as verification of implemented behavior.
 
-### 12.2 Evidence and proof
+### 13.2 Evidence and proof
 
 A test run MAY record evidence per scenario. An evidence record SHOULD name the scenario, the scenario version it ran against, the commit, and whether it passed:
 
@@ -929,7 +1043,7 @@ A test run MAY record evidence per scenario. An evidence record SHOULD name the 
 
 Planned scenarios are excluded from proof. Evidence for a nonexistent scenario, missing media, or an unknown commit SHOULD be reported as an integrity problem.
 
-### 12.3 Feedback and reconciliation loop
+### 13.3 Feedback and reconciliation loop
 
 A minimal workflow is:
 
@@ -964,11 +1078,11 @@ A plan that proposes requirement changes can carry both the versioned references
 
 Rehearsal, feedback triage, backlog planning, and code reconciliation can consume the graph through its read and mutation capabilities. Their queues, interfaces, and runtime architecture are outside this specification.
 
-## 13. Entity references
+## 14. Entity references
 
 Records outside the graph — feedback, plans, evidence, chat messages — SHOULD point at nodes by reference rather than copy their content.
 
-### 13.1 Reference syntax
+### 14.1 Reference syntax
 
 ```text
 ref     = type ":" id [ "@" version ]
@@ -985,7 +1099,7 @@ version = 1*HEXDIG                     ; lowercase
 
 A reference MUST have exactly one `:` and at most one `@`. A parser SHOULD return a specific reason for a malformed reference, such as a missing type or a non-hex version. A versionless reference means "current". A versioned reference records what its author saw; consumers decide whether a mismatch makes the record stale.
 
-### 13.2 Entity envelope
+### 14.2 Entity envelope
 
 A provider that resolves references SHOULD return each node as an entity:
 
@@ -1022,7 +1136,7 @@ type Entity = {
 }
 ```
 
-A scenario's entity version is its scenario version (§10.1). For other kinds, the version is a fingerprint of the canonical `data`. Labels use a state's or statement's `text`, a persona's or journey's `name`, and an intent's `title`.
+A scenario's entity version is its scenario version (§11.1). For other kinds, the version is a fingerprint of the canonical `data`. Labels use a state's or statement's `text`, a persona's or journey's `name`, and an intent's `title`.
 
 A provider MAY support queries of the form:
 
@@ -1032,9 +1146,9 @@ A provider MAY support queries of the form:
 
 A failed resolution SHOULD report one of `NotFound`, `UnknownType`, `NotAllowed`, `ProviderFailed`, or `OutOfScope`.
 
-## 14. Storage and interchange
+## 15. Storage and interchange
 
-Implementations MAY use files, a database, or another durable store. A simple file layout places one JSON envelope at `nodes/<id>.json`. The file name MUST match the node's `id`. Inbound relationships are derived from source-owned edges. Snapshot diffs match nodes by ID and edges by `(type, to)`.
+Implementations MAY use files, a database, or another durable store. A simple file layout places one JSON envelope at `nodes/<id>.json`, and evaluated copies of source documents at `sources/` (§10.4). The file name MUST match the node's `id`. Inbound relationships are derived from source-owned edges. Snapshot diffs match nodes by ID and edges by `(type, to)`.
 
 Exports MUST preserve IDs, node properties, relationships, and edge order. Imports MUST validate the complete graph, including duplicate IDs before building an ID-indexed map. An importer MAY retain unsupported extension types as opaque data or reject them clearly; it MUST NOT silently discard them or reinterpret them as core types. Version 0.1 graphs use `gherkin/card` for scenarios; an importer SHOULD either migrate that type to `gherkin/scenario` explicitly or reject it with that instruction.
 
@@ -1053,7 +1167,7 @@ Implementations MUST document the atomicity and recovery guarantees of their wri
 
 Damaged data MUST be reported rather than silently replaced. A recovery interface MAY expose the valid remainder of a graph, with missing references visibly marked. IDs associated with unresolved damaged records MUST remain reserved until recovery so ordinary authoring cannot overwrite them or allocate them again. A damaged record elsewhere SHOULD NOT block writes that neither touch it nor reference it. Storage-level edits and imports MUST be validated before they become accepted requirements.
 
-## 15. Adoption and acceptance checks
+## 16. Adoption and acceptance checks
 
 A team can adopt the workflow with four steps:
 
@@ -1089,82 +1203,129 @@ For optional extensions, also check:
 | Intents | Add a statement that no intent has, or that two intents have | Reject with `statement-owner`. |
 | Intents | Remove an intent that still has statements | Refuse and name the statements. |
 | Intents | Add an outcome that no journey serves | Raise one `gherkin:uncovered` item. |
-| Versions | Apply each row of the change matrix in §10.2 | Fingerprints change exactly as the matrix states. |
+| Versions | Apply each row of the change matrix in §11.2 | Fingerprints change exactly as the matrix states. |
 | Stories | Plan stories over an unrooted cycle and a journey handoff | Disclose the unwalked scenarios; emit each handoff pair once. |
-| Implementation | Produce each traceability inconsistency in §12.1 | Report `untagged`, `planned-but-tagged`, and `orphan`. |
+| Implementation | Produce each traceability inconsistency in §13.1 | Report `untagged`, `planned-but-tagged`, and `orphan`. |
 | References | Parse `gherkin/scenario:S-1@xyz` and `scenario:S-1` | Reject both with a specific reason. |
+| Sources | Find two entry documents by glob that share a source | Track the shared source once, listed by both. |
+| Sources | Change a source's line endings only | Keep it `current`. |
+| Sources | Edit an evaluated source | Report it `changed`, with its derived nodes. |
+| Sources | Add a `from` edge to a scenario | Keep its scenario version; do not mark it affected. |
+| Sources | Remove a source that nodes derive from | Refuse and name the nodes. |
 
 ## Reference library and CLI
 
-This repository includes a reference implementation of the core and every extension for [Bun](https://bun.sh), with no runtime dependencies. It stores a graph as `<graph>/nodes/<id>.json` (§14).
+This repository includes a reference implementation of the core and every extension for [Bun](https://bun.sh), with no runtime dependencies. It stores a graph as `<graph>/nodes/<id>.json` (§15).
 
 ```sh
 bun install
-bun test                                    # the examples above, the checks of §15, and the matrix of §10.2
+bun test                                    # the examples above, the checks of §16, and the matrix of §11.2
 bun link                                    # puts bgraph on your PATH
 ```
 
-The CLI reads the graph directory from `--graph`, then `$BGRAPH_DIR`, then `.behavior-graph`. Add `--json` to any command for machine-readable output.
+### Configuration
+
+`bgraph` reads the nearest `bgraph.json` at or above the working directory (§10.2). Its directory is the project root. `--root` starts the search elsewhere; `--graph` or `$BGRAPH_DIR` overrides the graph directory. Add `--json` to any command for machine-readable output.
 
 ```sh
-export BGRAPH_DIR=examples/registration
+bgraph init                                 # writes bgraph.json and a BEHAVIOR.md entry document, when absent
+```
+
+### Commands
+
+Run these inside [`examples/registration`](examples/registration), which has its own `bgraph.json`:
+
+```sh
+bgraph sources                              # §10.4: entry and source documents, and their status
+bgraph sources --accept INTENT.md           # record a document as evaluated; keeps a copy for the next diff
+bgraph sources --accept-all                 # every new or changed document
 
 bgraph render                               # §7: every scenario
 bgraph render I-0001                        # §9.5: an intent
 bgraph check                                # §5.3: findings; exits 1 on errors
 bgraph agenda                               # §5.4: open questions
 bgraph agenda --suggest                     # one-way states
-bgraph stories edge-pair                    # §11
-bgraph get gherkin/scenario:S-0002@e30089cbc147    # §13: entity; reports a stale version
+bgraph stories edge-pair                    # §12
+bgraph get gherkin/scenario:S-0002@e30089cbc147    # §14: entity; reports a stale version
 bgraph query gherkin/scenario --where planned=true
 bgraph revision ST-0002                     # for --expect
 
 bgraph ops                                  # §6.2: the operation vocabulary
-bgraph dry-run examples/registration/draft.json    # §6.4
+bgraph dry-run draft.json                   # §6.4
 bgraph apply draft.json --expect ST-0002=034e490894fd
-bgraph op add-journey '{"name":"Checkout"}'
+bgraph apply draft.json --accept INTENT.md  # §10.5: apply and record the document as evaluated, in one write
+bgraph op link '{"edge":"from","node":"I-0001","source":"INTENT.md","section":"Problem"}'
 
-bgraph audit --root .                       # §12.1: CI; exits 1 on problems
-bgraph audit --strict                       # completeness and coverage fail too
+bgraph audit                                # §13.1: CI; exits 1 on problems
+bgraph audit --strict                       # completeness, coverage and sources fail too
 ```
 
 A draft file is the JSON list of operations from §6.4. `-` reads it from standard input.
 
-`bgraph audit` scans code tags with `git grep`, so `--root` must be a git repository. It ignores `docs` and the graph directory by default; pass `--ignore` to choose other paths, or `--no-code` to skip tags. Evidence and proof (§12.2) are not implemented.
+`bgraph sources` exits 1 while any document is not `current`. `bgraph audit` adds a `sources` check whenever entry documents or source nodes exist. It scans code tags with `git grep`, so the project root must be a git repository. It skips the `ignore` paths from `bgraph.json` and the graph directory; pass `--ignore` to choose other paths, or `--no-code` to skip tags. Evidence and proof (§13.2) are not implemented.
 
-The library exports the same capabilities:
+### Library
 
 ```ts
-import { audit, dryRun, load, render, scanTags, write } from "behavior-graph"
+import { audit, discover, dryRun, load, loadConfig, render, scanTags, sourceStatus, write } from "behavior-graph"
+import { join } from "node:path"
 
-const { snapshot, problems } = load(".behavior-graph")
+const config = loadConfig()
+const graph = join(config.root, config.graph)
+const { snapshot, problems } = load(graph)
 console.log(render(snapshot))
 
-const preview = dryRun(snapshot, [{ tool: "add-journey", params: { name: "Checkout" } }])
-if (preview.ok) write(".behavior-graph", [{ tool: "add-journey", params: { name: "Checkout" } }])
+const draft = [{ tool: "add-journey", params: { name: "Checkout" } }]
+if (dryRun(snapshot, draft).ok) write(graph, draft)
 
-const report = audit({ snapshot, invalid: problems, tags: scanTags(".") })
+const found = discover(config.root, config.entries)
+const report = audit({
+  snapshot,
+  invalid: problems,
+  tags: scanTags(config.root, config.ignore),
+  sources: { status: sourceStatus(snapshot, config.root, graph, found), problems: found.problems },
+})
 ```
 
 | Module | Spec |
 | --- | --- |
-| `src/graph.ts` | Node envelope, snapshots, diffs, canonical form (§3.1, §14) |
-| `src/model.ts` | Node kinds, edge table, normalization (§3.2, §3.3, §5.2, §9) |
+| `src/graph.ts` | Node envelope, snapshots, diffs, canonical form (§3.1, §15) |
+| `src/model.ts` | Node kinds, edge table, normalization (§3.2, §3.3, §5.2, §9, §10.3) |
 | `src/validate.ts` | Findings: structure, properties, lints (§5.1, §5.3, §9.3) |
-| `src/ops.ts` | Operations (§6.2, §9.3) |
-| `src/draft.ts` | Drafts, dry runs, change impact (§6.4, §10.2) |
-| `src/store.ts` | File store and the validating write boundary (§6.2, §6.3, §14) |
-| `src/agenda.ts`, `src/render.ts`, `src/stories.ts` | §5.4 and §9.4, §7 and §9.5, §11 |
-| `src/entities.ts`, `src/hash.ts` | Refs, entities, versions, revisions (§10.1, §13, §14) |
-| `src/audit.ts`, `src/cli.ts` | Traceability audit and the `bgraph` command (§12.1) |
+| `src/ops.ts` | Operations (§6.2, §9.3, §10.3) |
+| `src/draft.ts` | Drafts, dry runs, change impact (§6.4, §11.2) |
+| `src/store.ts` | File store and the validating write boundary (§6.2, §6.3, §15) |
+| `src/config.ts`, `src/sources.ts` | `bgraph.json`, entry discovery, checksums, status, acceptance (§10) |
+| `src/agenda.ts`, `src/render.ts`, `src/stories.ts` | §5.4 and §9.4, §7 and §9.5, §12 |
+| `src/entities.ts`, `src/hash.ts` | Refs, entities, versions, revisions (§11.1, §14, §15) |
+| `src/audit.ts`, `src/cli.ts` | Traceability audit and the `bgraph` command (§13.1) |
 
-## Changes from 0.1
+### Agent skill
+
+[`skills/bgraph/SKILL.md`](skills/bgraph/SKILL.md) teaches an agent to evaluate source documents into the graph (§10.5) and to author the graph by the rules of this specification. The repository is a Claude Code plugin marketplace:
+
+```text
+/plugin marketplace add zargscale/behavior-graph-specification
+/plugin install bgraph@behavior-graph
+```
+
+Other agents can read the skill file directly; it is plain Markdown.
+
+## Changes
+
+### From 0.2
+
+- Added the sources extension (§10): entry documents found by glob through `bgraph.json`, source documents they list, checksums and status, `gherkin/source` nodes, and `gherkin/from` provenance edges. Sections 10–15 of 0.2 are now 11–16.
+- Added an agent skill for evaluating sources into the graph, packaged as a Claude Code plugin.
+
+### From 0.1
+
 
 - Renamed the `card` node kind to `scenario` (`gherkin/card` to `gherkin/scenario`), and the code tag from `@card` to `@scenario`. Example IDs now use `S-` for scenarios and `ST-` for states.
 - Added the intents and coverage extension (§9).
-- Added entity references and the entity envelope (§13).
+- Added entity references and the entity envelope (§14).
 - Added the finding and agenda item shapes, stable codes, the `or` warning, and the single "unused state" agenda item (§5).
-- Added the declarative edge table (§3.3), the operation vocabulary and draft format (§6.2, §6.4), and evidence and proof (§12.2).
+- Added the declarative edge table (§3.3), the operation vocabulary and draft format (§6.2, §6.4), and evidence and proof (§13.2).
 - Moved the complete example into node files under `examples/`, and replaced illustrative output with output from the reference library.
 - Added a reference library and CLI (`bgraph`) for Bun.
 

@@ -1,4 +1,4 @@
-/** Entity references and envelopes (§13), and scenario versions (§10.1). */
+/** Entity references and envelopes (§14), and scenario versions (§11.1). */
 import type { Node, Snapshot } from "./graph.ts"
 import { versionOf } from "./hash.ts"
 import { labelOf, SCENARIO } from "./model.ts"
@@ -41,10 +41,10 @@ export const formatRef = (r: Ref): string => `${r.type}:${r.id}${r.version !== u
 export const scenarioVersionInput = (snap: Snapshot, id: string) => {
   const scenario = snap.nodes.get(id)
   if (scenario === undefined || scenario.type !== SCENARIO) return undefined
-  // A persona contributes its name, not its description (§10.2).
+  // A persona contributes its name, not its description (§11.2).
   const wording = (to: string) => { const n = snap.nodes.get(to); return n === undefined ? to : labelOf(n) }
   const { planned: _, ...props } = scenario.props
-  return { props, steps: scenario.edges.filter((e) => e.type !== "gherkin/in").map((e) => ({ edge: e.type, to: e.to, text: wording(e.to) })) }
+  return { props, steps: scenario.edges.filter((e) => e.type !== "gherkin/in" && e.type !== "gherkin/from").map((e) => ({ edge: e.type, to: e.to, text: wording(e.to) })) }
 }
 
 export const scenarioVersion = (snap: Snapshot, id: string): string | undefined => {
@@ -65,6 +65,7 @@ const GLYPHS: Readonly<Record<string, readonly [string, string]>> = {
   "gherkin/outcome": ["ok", "▸"],
   "gherkin/constraint": ["attention", "▪"],
   "gherkin/question": ["dim", "?"],
+  "gherkin/source": ["dim", "¶"],
 }
 
 export interface Entity {

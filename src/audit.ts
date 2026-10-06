@@ -1,8 +1,9 @@
-/** Traceability (§12.1) and a whole-graph audit for CI: structure, lints, completeness, coverage, code tags. */
+/** Traceability (§13.1) and a whole-graph audit for CI: structure, lints, completeness, coverage, code tags. */
 import { byType, danglingEdges, type Snapshot } from "./graph.ts"
 import { agenda } from "./agenda.ts"
 import { JOURNEY, OUTCOME, SCENARIO, SERVES, text, nameOf } from "./model.ts"
 import { checkAll, errors } from "./validate.ts"
+import type { Discovered, SourceStatus } from "./sources.ts"
 import type { Problem as LoadProblem } from "./store.ts"
 
 export interface Tag {
@@ -32,7 +33,7 @@ export const scanTags = (root: string, ignore: ReadonlyArray<string> = DEFAULT_I
   return parseTags(p.stdout.toString())
 }
 
-export type CheckName = "structure" | "lints" | "completeness" | "coverage" | "code"
+export type CheckName = "structure" | "lints" | "completeness" | "coverage" | "sources" | "code"
 export type Level = "problem" | "warning"
 export interface Item {
   readonly id: string
@@ -63,7 +64,9 @@ export interface AuditInput {
   readonly tags?: ReadonlyArray<Tag>
   /** Files that failed to load. */
   readonly invalid?: ReadonlyArray<LoadProblem>
-  /** Completeness and coverage fail the audit too. */
+  /** Source documents and their status; omit to skip the sources check. */
+  readonly sources?: { readonly status: ReadonlyArray<SourceStatus>; readonly problems: Discovered["problems"] }
+  /** Completeness, coverage and sources fail the audit too. */
   readonly strict?: boolean
 }
 
@@ -111,6 +114,14 @@ export const audit = (i: AuditInput): Report => {
       items: [
         ...outcomes.filter((o) => !served.has(o.id)).map((o) => ({ id: o.id, detail: `uncovered: ${text(o)}` })),
         ...(outcomes.length === 0 ? [] : byType(snap, JOURNEY).filter((j) => !j.edges.some((e) => e.type === SERVES)).map((j) => ({ id: j.id, detail: `unserving: ${nameOf(j)}` }))),
+      ],
+    },
+    {
+      name: "sources",
+      level: soft,
+      items: [
+        ...(i.sources?.problems ?? []).map((p) => ({ id: p.path, detail: p.message })),
+        ...(i.sources?.status ?? []).filter((s) => s.state !== "current").map((s) => ({ id: s.path, detail: `${s.state}${s.derived.length > 0 ? `: derived ${s.derived.join(", ")}` : ""}` })),
       ],
     },
     {

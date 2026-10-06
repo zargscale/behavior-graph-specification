@@ -1,0 +1,9 @@
+{
+  "name": "bgraph",
+  "description": "Evaluate human-written source documents into a behavior graph and author it by the Behavior Graph Specification, using the bgraph CLI.",
+  "version": "0.3.0",
+  "author": { "name": "zargscale" },
+  "repository": "https://github.com/zargscale/behavior-graph-specification",
+  "license": "MIT",
+  "skills": "./skills/"
+}

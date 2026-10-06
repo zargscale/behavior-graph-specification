@@ -1,0 +1,9 @@
+{
+  "edges": [],
+  "id": "SRC-0002",
+  "props": {
+    "hash": "d9c4cfb08da4",
+    "path": "INTENT.md"
+  },
+  "type": "gherkin/source"
+}

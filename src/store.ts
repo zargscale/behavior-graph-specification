@@ -1,4 +1,4 @@
-/** One canonical JSON file per node at `<dir>/nodes/<id>.json` (§14), and the validating write boundary (§6.2). */
+/** One canonical JSON file per node at `<dir>/nodes/<id>.json` (§15), and the validating write boundary (§6.2). */
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { basename, join } from "node:path"
 import { applyChanges, canonical, type Change, changedId, danglingEdges, diff, type Diff, envelopeProblem, make, type Node, type Snapshot } from "./graph.ts"

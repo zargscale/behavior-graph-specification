@@ -1,6 +1,6 @@
-/** Drafts (§6.4): ordered operations over an in-memory snapshot, previews, and change impact (§10.2). */
+/** Drafts (§6.4): ordered operations over an in-memory snapshot, previews, and change impact (§11.2). */
 import { applyChanges, type Change, changedId, diff, inbound, nextId, type Snapshot } from "./graph.ts"
-import { IN, SCENARIO, STATE } from "./model.ts"
+import { FROM, IN, SCENARIO, STATE } from "./model.ts"
 import { OpError, runOp } from "./ops.ts"
 import { cardinalityProblem, check, errors, type Finding } from "./validate.ts"
 
@@ -56,10 +56,10 @@ export const affected = (before: Snapshot, after: Snapshot): Affected => {
   const d = diff(before, after)
   const ids = new Set<string>()
   for (const n of d.added) if (n.type === SCENARIO) ids.add(n.id)
-  // What code depends on: words and edges, not planned nor journey membership.
+  // What code depends on: words and edges, not planned, journey membership, nor provenance.
   const behavior = (n: { readonly props: Readonly<Record<string, unknown>>; readonly edges: ReadonlyArray<{ readonly type: string; readonly to: string }> }) => {
     const { planned: _, ...props } = n.props
-    return JSON.stringify([props, n.edges.filter((e) => e.type !== IN)])
+    return JSON.stringify([props, n.edges.filter((e) => e.type !== IN && e.type !== FROM)])
   }
   for (const c of d.changed) {
     if (c.after.type === SCENARIO && behavior(c.before) !== behavior(c.after)) ids.add(c.id)

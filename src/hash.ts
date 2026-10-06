@@ -1,4 +1,4 @@
-/** Fingerprints (§14): node revisions detect stale edits, versions detect stale feedback and evidence. */
+/** Fingerprints (§15): node revisions detect stale edits, versions detect stale feedback and evidence. */
 import { createHash } from "node:crypto"
 import { canonical, canonicalJson, type Node } from "./graph.ts"
 

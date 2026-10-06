@@ -1,4 +1,4 @@
-/** The acceptance checks of §15, and the fingerprint matrix of §10.2. */
+/** The acceptance checks of §16, and the fingerprint matrix of §11.2. */
 import { expect, test } from "bun:test"
 import {
   agenda, applyDraft, checkAll, type Draft, dryRun, empty, make, type Node, nextOf, OpError, parseRef, planStories, refProblem, render, revision, runOp, scenarioVersion, type Snapshot,
@@ -103,7 +103,7 @@ test("intents: statement ownership, removal and coverage", () => {
   expect(runOp("answer-question", { id: "Q-0001", answer: "yes" }, build([{ tool: "ask-question", params: { intent: "I-0001", text: "Does it expire?" } }], s)).changes.length).toBe(1)
 })
 
-test("§10.2: which changes move the node revision and the scenario version", () => {
+test("§11.2: which changes move the node revision and the scenario version", () => {
   const rev = (s: Snapshot) => revision(s.nodes.get("S-0001")!)
   const ver = (s: Snapshot) => scenarioVersion(s, "S-0001")
   const rows: ReadonlyArray<[string, Draft, boolean, boolean]> = [

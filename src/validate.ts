@@ -20,13 +20,13 @@ export interface Context {
 const error = (code: string, message: string, about: ReadonlyArray<string>): Finding => ({ severity: "error", code, message, about })
 const warn = (code: string, message: string, about: ReadonlyArray<string>): Finding => ({ severity: "warn", code, message, about })
 const full = (local: string) => `${NS}/${local}`
-const targets = (to: string | ReadonlyArray<string>) => (typeof to === "string" ? [to] : to).map(full)
+const kinds = (k: string | ReadonlyArray<string>) => (typeof k === "string" ? [k] : k).map(full)
 const wordCount = (s: string) => s.trim().split(/\s+/).filter((w) => w !== "").length
 
 /** "S-0004 has 0 then edges; it needs 1-5", or undefined when the count fits. */
 export const cardinalityProblem = (n: Node): ReadonlyArray<{ readonly code: string; readonly message: string }> =>
   Object.entries(EDGES)
-    .filter(([, spec]) => full(spec.from) === n.type)
+    .filter(([, spec]) => kinds(spec.from).includes(n.type))
     .flatMap(([local, spec]) => {
       const count = n.edges.filter((e) => e.type === full(local)).length
       const low = spec.min !== undefined && count < spec.min
@@ -50,10 +50,10 @@ export const structure = (snap: Snapshot, n: Node): ReadonlyArray<Finding> => {
       if (e.type.startsWith(`${NS}/`)) found.push(error("unknown-edge", `${n.id}: unknown edge type "${e.type}"`, [n.id]))
       continue
     }
-    if (full(spec.from) !== n.type) found.push(error("edge-source", `${n.id}: "${e.type}" edges must start at a ${full(spec.from)}`, [n.id]))
+    if (!kinds(spec.from).includes(n.type)) found.push(error("edge-source", `${n.id}: "${e.type}" edges must start at a ${kinds(spec.from).join(" or ")}`, [n.id]))
     const target = snap.nodes.get(e.to)
     if (target === undefined) found.push(error("missing-target", `${n.id} points at ${e.to}, which is not in the graph`, [n.id, e.to]))
-    else if (!targets(spec.to).includes(target.type)) found.push(error("edge-target", `${n.id}: "${e.type}" must point to a ${targets(spec.to).join(" or ")}, ${e.to} is a ${target.type}`, [n.id, e.to]))
+    else if (!kinds(spec.to).includes(target.type)) found.push(error("edge-target", `${n.id}: "${e.type}" must point to a ${kinds(spec.to).join(" or ")}, ${e.to} is a ${target.type}`, [n.id, e.to]))
     const key = `${e.type}\u0000${e.to}`
     if (seen.has(key)) found.push(error("duplicate-edge", `${n.id}: links ${e.to} as "${e.type}" twice; remove the duplicate`, [n.id, e.to]))
     seen.add(key)
@@ -63,7 +63,7 @@ export const structure = (snap: Snapshot, n: Node): ReadonlyArray<Finding> => {
   if (props.length > 0) found.push(error("invalid-props", `${n.id}: props do not match ${n.type}: ${props.join("; ")}`, [n.id]))
   return found
 }
-const KIND_SET = { state: 1, scenario: 1, persona: 1, journey: 1, intent: 1, outcome: 1, constraint: 1, question: 1 }
+const KIND_SET = { state: 1, scenario: 1, persona: 1, journey: 1, intent: 1, outcome: 1, constraint: 1, question: 1, source: 1 }
 
 const touched = (ctx: Context): ReadonlyArray<Node> => [...ctx.diff.added, ...ctx.diff.changed.map((c) => c.after)]
 

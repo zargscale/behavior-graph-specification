@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "behavior-graph",
+  "owner": { "name": "zargscale" },
+  "metadata": { "description": "The Behavior Graph Specification and its bgraph tooling." },
+  "plugins": [
+    {
+      "name": "bgraph",
+      "description": "Evaluate human-written source documents into a behavior graph and author it by the Behavior Graph Specification, using the bgraph CLI.",
+      "version": "0.3.0",
+      "source": "./",
+      "category": "development",
+      "tags": ["requirements", "gherkin", "traceability", "specification"]
+    }
+  ]
+}

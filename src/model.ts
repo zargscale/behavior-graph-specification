@@ -10,6 +10,7 @@ export const INTENT = "gherkin/intent"
 export const OUTCOME = "gherkin/outcome"
 export const CONSTRAINT = "gherkin/constraint"
 export const QUESTION = "gherkin/question"
+export const SOURCE = "gherkin/source"
 
 export const ARRIVES = "gherkin/arrives"
 export const GIVEN = "gherkin/given"
@@ -20,9 +21,10 @@ export const HAS = "gherkin/has"
 export const FOR = "gherkin/for"
 export const SERVES = "gherkin/serves"
 export const BOUNDS = "gherkin/bounds"
+export const FROM = "gherkin/from"
 
 export interface EdgeSpec {
-  readonly from: string
+  readonly from: string | ReadonlyArray<string>
   readonly to: string | ReadonlyArray<string>
   readonly min?: number
   readonly max?: number
@@ -39,6 +41,7 @@ export const EDGES: Readonly<Record<string, EdgeSpec>> = {
   for: { from: "intent", to: "persona" },
   serves: { from: "journey", to: "outcome" },
   bounds: { from: "constraint", to: ["journey", "scenario"] },
+  from: { from: ["state", "scenario", "persona", "journey", "intent", "outcome", "constraint", "question"], to: "source" },
 }
 
 type Field = { readonly kind: "string" | "boolean"; readonly optional?: boolean; readonly values?: ReadonlyArray<string>; readonly empty?: boolean }
@@ -56,6 +59,7 @@ export const KINDS: Readonly<Record<string, Readonly<Record<string, Field>>>> = 
   outcome: { text: str },
   constraint: { text: str },
   question: { text: str, answer: optStr },
+  source: { path: str, hash: str, entry: optBool },
 }
 
 /** Why a node's props break its kind's schema; empty when they fit or the kind is not gherkin's. */
@@ -87,14 +91,16 @@ export const similarity = (a: string, b: string): number => {
 
 export const text = (n: Node): string => String(n.props.text ?? "")
 export const nameOf = (n: Node): string => String(n.props.name ?? "")
-/** A node's human label: text, name or title. */
-export const labelOf = (n: Node): string => String(n.props.name ?? n.props.title ?? n.props.text ?? n.id)
+/** A node's human label: name, title, text or path. */
+export const labelOf = (n: Node): string => String(n.props.name ?? n.props.title ?? n.props.text ?? n.props.path ?? n.id)
 
 export const states = (snap: Snapshot) => byType(snap, STATE)
 export const scenarios = (snap: Snapshot) => byType(snap, SCENARIO)
 export const personas = (snap: Snapshot) => byType(snap, PERSONA)
 export const journeys = (snap: Snapshot) => byType(snap, JOURNEY)
 export const intents = (snap: Snapshot) => byType(snap, INTENT)
+export const sources = (snap: Snapshot) => byType(snap, SOURCE)
+export const findSource = (snap: Snapshot, path: string): Node | undefined => sources(snap).find((s) => s.props.path === path)
 
 export const STATEMENTS: ReadonlyArray<string> = [OUTCOME, CONSTRAINT, QUESTION]
 export const isStatement = (n: Node): boolean => STATEMENTS.includes(n.type)

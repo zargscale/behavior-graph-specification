@@ -25,7 +25,7 @@ export interface InEdge {
 export interface Snapshot {
   readonly nodes: ReadonlyMap<string, Node>
   readonly inbound: ReadonlyMap<string, ReadonlyArray<InEdge>>
-  /** Ids whose files exist but failed to load: never allocated again, never overwritten (§14). */
+  /** Ids whose files exist but failed to load: never allocated again, never overwritten (§15). */
   readonly reserved: ReadonlySet<string>
 }
 
@@ -110,7 +110,7 @@ const sortKeys = (v: unknown): unknown =>
       ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys((v as Record<string, unknown>)[k])]))
       : v
 
-/** The file form (§14): keys sorted at every depth, arrays in order, two-space indent, trailing newline. */
+/** The file form (§15): keys sorted at every depth, arrays in order, two-space indent, trailing newline. */
 export const canonical = (node: Node): string => `${JSON.stringify(sortKeys(node), null, 2)}\n`
 /** Compact JSON with keys sorted at every depth: the input of a version fingerprint. */
 export const canonicalJson = (v: unknown): string => JSON.stringify(sortKeys(v))

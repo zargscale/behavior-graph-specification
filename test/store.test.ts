@@ -1,4 +1,4 @@
-/** The file store (§14), the write boundary (§6.2, §6.3), and the CLI end to end. */
+/** The file store (§15), the write boundary (§6.2, §6.3), and the CLI end to end. */
 import { expect, test } from "bun:test"
 import { cpSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"

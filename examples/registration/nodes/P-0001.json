@@ -1,5 +1,13 @@
 {
-  "edges": [],
+  "edges": [
+    {
+      "props": {
+        "section": "Who it is for"
+      },
+      "to": "SRC-0002",
+      "type": "gherkin/from"
+    }
+  ],
   "id": "P-0001",
   "props": {
     "kind": "human",
