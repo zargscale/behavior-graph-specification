@@ -1,0 +1,10 @@
+{
+  "edges": [],
+  "id": "P-0001",
+  "props": {
+    "kind": "human",
+    "name": "Visitor",
+    "text": "A person creating an account through the website. They see forms, messages, and confirmation emails."
+  },
+  "type": "gherkin/persona"
+}

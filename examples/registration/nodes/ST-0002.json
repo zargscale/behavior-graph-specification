@@ -1,0 +1,8 @@
+{
+  "edges": [],
+  "id": "ST-0002",
+  "props": {
+    "text": "the registration form is shown"
+  },
+  "type": "gherkin/state"
+}

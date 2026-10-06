@@ -1,0 +1,9 @@
+{
+  "edges": [],
+  "id": "ST-0004",
+  "props": {
+    "terminal": true,
+    "text": "a confirmation email is sent"
+  },
+  "type": "gherkin/state"
+}

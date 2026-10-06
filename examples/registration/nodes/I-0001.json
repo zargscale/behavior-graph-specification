@@ -1,0 +1,27 @@
+{
+  "edges": [
+    {
+      "to": "P-0001",
+      "type": "gherkin/for"
+    },
+    {
+      "to": "O-0001",
+      "type": "gherkin/has"
+    },
+    {
+      "to": "K-0001",
+      "type": "gherkin/has"
+    },
+    {
+      "to": "Q-0001",
+      "type": "gherkin/has"
+    }
+  ],
+  "id": "I-0001",
+  "props": {
+    "problem": "Visitors email support to get an account, and wait a day for a reply.",
+    "status": "accepted",
+    "title": "Self-service sign-up"
+  },
+  "type": "gherkin/intent"
+}

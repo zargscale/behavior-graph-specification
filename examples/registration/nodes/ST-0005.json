@@ -1,0 +1,9 @@
+{
+  "edges": [],
+  "id": "ST-0005",
+  "props": {
+    "terminal": true,
+    "text": "a validation message identifies missing details"
+  },
+  "type": "gherkin/state"
+}

@@ -1,0 +1,13 @@
+{
+  "edges": [
+    {
+      "to": "S-0002",
+      "type": "gherkin/bounds"
+    }
+  ],
+  "id": "K-0001",
+  "props": {
+    "text": "A confirmation email never contains the visitor's password."
+  },
+  "type": "gherkin/constraint"
+}

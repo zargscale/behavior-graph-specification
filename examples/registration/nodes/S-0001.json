@@ -1,0 +1,26 @@
+{
+  "edges": [
+    {
+      "to": "P-0001",
+      "type": "gherkin/by"
+    },
+    {
+      "to": "ST-0001",
+      "type": "gherkin/arrives"
+    },
+    {
+      "to": "ST-0002",
+      "type": "gherkin/then"
+    },
+    {
+      "to": "J-0001",
+      "type": "gherkin/in"
+    }
+  ],
+  "id": "S-0001",
+  "props": {
+    "title": "Visitor opens registration",
+    "when": "the visitor opens registration"
+  },
+  "type": "gherkin/scenario"
+}

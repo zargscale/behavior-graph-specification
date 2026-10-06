@@ -1,0 +1,31 @@
+{
+  "edges": [
+    {
+      "to": "P-0001",
+      "type": "gherkin/by"
+    },
+    {
+      "to": "ST-0002",
+      "type": "gherkin/arrives"
+    },
+    {
+      "to": "ST-0002",
+      "type": "gherkin/then"
+    },
+    {
+      "to": "ST-0005",
+      "type": "gherkin/then"
+    },
+    {
+      "to": "J-0001",
+      "type": "gherkin/in"
+    }
+  ],
+  "id": "S-0003",
+  "props": {
+    "planned": true,
+    "title": "Visitor submits incomplete details",
+    "when": "the visitor submits incomplete registration details"
+  },
+  "type": "gherkin/scenario"
+}

@@ -1,0 +1,9 @@
+{
+  "edges": [],
+  "id": "ST-0001",
+  "props": {
+    "entry": true,
+    "text": "the home page is shown"
+  },
+  "type": "gherkin/state"
+}

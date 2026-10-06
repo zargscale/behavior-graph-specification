@@ -1,0 +1,10 @@
+[
+  { "tool": "edit-state", "params": { "id": "ST-0002", "text": "the sign-up form is shown" } },
+  { "tool": "add-scenario", "params": {
+      "title": "Visitor reuses a registered email",
+      "when": "the visitor submits an email that already has an account",
+      "by": [{ "name": "Visitor" }],
+      "arrives": { "id": "ST-0002" },
+      "then": [{ "id": "ST-0002" }, { "text": "a message offers to reset the password" }] } },
+  { "tool": "link", "params": { "edge": "in", "scenario": "S-0004", "journey": "Create an account" } }
+]

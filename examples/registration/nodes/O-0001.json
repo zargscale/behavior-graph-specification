@@ -1,0 +1,8 @@
+{
+  "edges": [],
+  "id": "O-0001",
+  "props": {
+    "text": "A visitor creates an account without contacting support."
+  },
+  "type": "gherkin/outcome"
+}

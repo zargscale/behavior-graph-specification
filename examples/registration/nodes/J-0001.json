@@ -1,0 +1,13 @@
+{
+  "edges": [
+    {
+      "to": "O-0001",
+      "type": "gherkin/serves"
+    }
+  ],
+  "id": "J-0001",
+  "props": {
+    "name": "Create an account"
+  },
+  "type": "gherkin/journey"
+}
